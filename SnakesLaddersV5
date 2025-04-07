@@ -1,0 +1,137 @@
+import java.awt.*;
+import java.awt.event.*; 
+import java.util.Random;
+import javax.swing.*; 
+
+public class SnakesLaddersV5 {
+    private static JLabel label; 
+    private static JLabel board; 
+    private static final JLabel[] playerScores = new JLabel[4]; 
+    private static final JLabel gameEnd = new JLabel(); 
+    private static final JLabel[] playerPawns = new JLabel[4]; 
+    private static final Random random = new Random(); 
+    private static final int[] playerScoresValue = {0, 0, 0, 0}; 
+    private static int currentPlayer = 0; 
+    private static final int[] square = new int[101]; 
+    private static int[][] boardGrid; 
+    private static final String[] playerColors = {"Red", "Blue", "Green", "Yellow"}; 
+
+    public static void main(String[] args) {
+        createBoardGrid(); 
+        board(); 
+        setupGUI(); 
+    }
+
+    public static void createBoardGrid() {
+        boardGrid = new int[10][10]; 
+        int number = 1; 
+        for (int row = 9; row >= 0; row--) {
+            if ((9 - row) % 2 == 0) {
+                for (int col = 0; col < 10; col++) {
+                    boardGrid[row][col] = number++; 
+                }
+            } else {
+                for (int col = 9; col >= 0; col--) {
+                    boardGrid[row][col] = number++; 
+                }
+            }
+        }
+    }
+
+    public static void setupGUI() {
+        JFrame frame = new JFrame("Snakes & Ladders"); 
+        frame.setSize(1600,800); 
+        frame.setResizable(true); 
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        frame.setLayout(null); 
+        frame.getContentPane().setBackground(new Color (255, 255, 255)); 
+
+        label = new JLabel(new ImageIcon("roll1.png")); 
+        label.setBounds(1080, 540, 200, 200); 
+        frame.add(label); 
+
+        gameEnd.setBounds(640, 370, 400, 200); 
+        gameEnd.setFont(new Font("Arial", Font.BOLD, 18)); 
+        gameEnd.setVisible(false); 
+        frame.add(gameEnd); 
+
+        for (int i = 0; i < 4; i++) {
+            playerScores[i] = new JLabel(playerColors[i] + ": " + playerScoresValue[i]); 
+            playerScores[i].setBounds(800, 600 - (i * 25), 200, 25); 
+            playerScores[i].setFont(new Font("Arial", Font.BOLD, 18)); 
+            frame.add(playerScores[i]); 
+
+            playerPawns[i] = new JLabel(new ImageIcon("pawn" + (i + 1) + ".png")); 
+            playerPawns[i].setBounds(800, 800, 50, 50); 
+            frame.add(playerPawns[i]); 
+            movePawn(i, 1); 
+        }
+
+        label.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                rollDice(); 
+            }
+        }); 
+
+        board = new JLabel(new ImageIcon("board.png")); 
+        board.setBounds(0, 0, 800, 800); 
+        board.setVerticalAlignment(JLabel.TOP); 
+        board.setHorizontalAlignment(JLabel.LEFT); 
+        frame.add(board); 
+        frame.setVisible(true); 
+
+    }
+
+    public static void rollDice() {
+        int roll = random.nextInt(6) + 1; 
+        label.setIcon(new ImageIcon("roll" + roll + ".png")); 
+        
+        int newPosition = playerScoresValue[currentPlayer] + roll; 
+
+        if (newPosition > 100) { 
+            currentPlayer = (currentPlayer + 1) % 4; 
+            return; 
+        }
+
+        playerScoresValue[currentPlayer] = square[newPosition]; 
+        movePawn(currentPlayer, playerScoresValue[currentPlayer]); 
+        playerScores[currentPlayer].setText(playerColors[currentPlayer] + ": " + playerScoresValue[currentPlayer]); 
+
+        if (playerScoresValue[currentPlayer] == 100) {
+            gameEnd.setText("Player " + (currentPlayer + 1) + " won! Congratulations!"); 
+            gameEnd.setVisible(true); 
+            return; 
+        }
+
+        currentPlayer = (currentPlayer + 1) % 4; 
+    }
+
+    public static void movePawn(int player, int position) {
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 10; col++) {
+                if (boardGrid[row][col] == position) {
+                    int xRow = (position - 1) / 10; 
+                    int xCol;  
+                    
+                    if (xRow % 2 == 0) {
+                        xCol = (position - 1) % 10; 
+                    } else {
+                        xCol = 9 - ((position - 1) % 10); 
+                    }
+
+                    int x = xCol * 74 + 30; 
+                    int y = (9 - xRow) * 74 + 30; 
+                    playerPawns[player].setBounds(x, y, 50, 50); 
+                }
+            }
+        }
+    }
+
+    public static void board() {
+        for (int i = 0; i <= 100; i++) {
+            square[i] = i; 
+        }
+        square[1] = 38; square[4] = 14; square[9] = 31; square[21] = 42; square[28] = 84; square[36] = 44; square[51] = 67; square[71] = 91; square[80] = 100; 
+        square[16] = 6; square[49] = 11; square[48] = 26; square[56] = 53; square[62] = 19; square[64] = 60; square[87] = 24; square[93] = 73; square[95] = 75; square[98] = 78; 
+    }
+}
